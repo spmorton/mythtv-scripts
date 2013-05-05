@@ -232,7 +232,7 @@ class VIDEO:
         self.log(MythLog.GENERAL, MythLog.INFO, 'Checking for duplication of ',
                     '%s - %s' % (self.rec.title, self.rec.subtitle))
         if bend.fileExists(self.vid.filename, 'Videos'):
-                     self.log(MythLog.GENERAL, MythLog.INFO, 'Recording already exists in Myth Videos')
+          self.log(MythLog.GENERAL, MythLog.INFO, 'Recording already exists in Myth Videos')
           self.job.setComment("Action would result in duplicate file, job ended" )
           self.job.setStatus(Job.FINISHED)
     
