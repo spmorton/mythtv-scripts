@@ -237,9 +237,9 @@ class VIDEO:
           self.job.setStatus(Job.FINISHED)
     
         else:
-                     srcfp = self.rec.open('r')
-                     dstfp = self.vid.open('w')
-
+          srcfp = self.rec.open('r')
+          dstfp = self.vid.open('w')
+	  
 	  if self.job:
 	      self.job.setStatus(Job.RUNNING)
 	  tsize = 2**24
