@@ -226,55 +226,66 @@ class VIDEO:
                % (self.rec.storagegroup, self.rec.hostname, self.rec.basename)\
                                                     +" to myth://Videos@%s/%s"\
                                           % (self.vid.host, self.vid.filename))
-        srcfp = self.rec.open('r')
-        dstfp = self.vid.open('w')
+        
+        
+        bend = MythBE(db=self.vid._db)
+        self.log(MythLog.GENERAL, MythLog.INFO, 'Checking for duplication of ',
+                    '%s - %s' % (self.rec.title, self.rec.subtitle))
+        if bend.fileExists(self.vid.filename, 'Videos'):
+                     self.log(MythLog.GENERAL, MythLog.INFO, 'Recording already exists in Myth Videos')
+          self.job.setComment("Action would result in duplicate file, job ended" )
+          self.job.setStatus(Job.FINISHED)
+    
+        else:
+                     srcfp = self.rec.open('r')
+                     dstfp = self.vid.open('w')
 
-        if self.job:
-            self.job.setStatus(Job.RUNNING)
-        tsize = 2**24
-        while tsize == 2**24:
-            tsize = min(tsize, srcsize - dstfp.tell())
-            dstfp.write(srcfp.read(tsize))
-            htime.append(time.time())
-            rate = float(tsize*4)/(time.time()-htime.pop(0))
-            remt = (srcsize-dstfp.tell())/rate
-            if self.job:
-                self.job.setComment("%02d%% complete - %d seconds remaining" %\
-                            (dstfp.tell()*100/srcsize, remt))
-        srcfp.close()
-        dstfp.close()
+	  if self.job:
+	      self.job.setStatus(Job.RUNNING)
+	  tsize = 2**24
+	  while tsize == 2**24:
+	      tsize = min(tsize, srcsize - dstfp.tell())
+	      dstfp.write(srcfp.read(tsize))
+	      htime.append(time.time())
+	      rate = float(tsize*4)/(time.time()-htime.pop(0))
+	      remt = (srcsize-dstfp.tell())/rate
+	      if self.job:
+		  self.job.setComment("%02d%% complete - %d seconds remaining" %\
+			      (dstfp.tell()*100/srcsize, remt))
+	  srcfp.close()
+	  dstfp.close()
 
-        self.vid.hash = self.vid.getHash()
+	  self.vid.hash = self.vid.getHash()
 
-        self.log(MythLog.GENERAL|MythLog.FILE, MythLog.INFO, "Transfer Complete",
-                            "%d seconds elapsed" % int(time.time()-stime))
+	  self.log(MythLog.GENERAL|MythLog.FILE, MythLog.INFO, "Transfer Complete",
+			      "%d seconds elapsed" % int(time.time()-stime))
 
-        if self.opts.reallysafe:
-            if self.job:
-                self.job.setComment("Checking file hashes")
-            self.log(MythLog.GENERAL|MythLog.FILE, MythLog.INFO, "Checking file hashes.")
-            srchash = hashfile(self.rec.open('r'))
-            dsthash = hashfile(self.rec.open('r'))
-            if srchash != dsthash:
-                raise MythError('Source hash (%s) does not match destination hash (%s)' \
-                            % (srchash, dsthash))
-        elif self.opts.safe:
-            self.log(MythLog.GENERAL|MythLog.FILE, MythLog.INFO, "Checking file sizes.")
-            be = MythBE(db=self.vid._db)
-            try:
-                srcsize = be.getSGFile(self.rec.hostname, self.rec.storagegroup, \
-                                       self.rec.basename)[1]
-                dstsize = be.getSGFile(self.vid.host, 'Videos', self.vid.filename)[1]
-            except:
-                raise MythError('Could not query file size from backend')
-            if srcsize != dstsize:
-                raise MythError('Source size (%d) does not match destination size (%d)' \
-                            % (srcsize, dstsize))
+	  if self.opts.reallysafe:
+	      if self.job:
+		  self.job.setComment("Checking file hashes")
+	      self.log(MythLog.GENERAL|MythLog.FILE, MythLog.INFO, "Checking file hashes.")
+	      srchash = hashfile(self.rec.open('r'))
+	      dsthash = hashfile(self.rec.open('r'))
+	      if srchash != dsthash:
+		  raise MythError('Source hash (%s) does not match destination hash (%s)' \
+			      % (srchash, dsthash))
+	  elif self.opts.safe:
+	      self.log(MythLog.GENERAL|MythLog.FILE, MythLog.INFO, "Checking file sizes.")
+	      be = MythBE(db=self.vid._db)
+	      try:
+		  srcsize = be.getSGFile(self.rec.hostname, self.rec.storagegroup, \
+					self.rec.basename)[1]
+		  dstsize = be.getSGFile(self.vid.host, 'Videos', self.vid.filename)[1]
+	      except:
+		  raise MythError('Could not query file size from backend')
+	      if srcsize != dstsize:
+		  raise MythError('Source size (%d) does not match destination size (%d)' \
+			      % (srcsize, dstsize))
 
-        if self.job:
-            self.job.setComment("Complete - %d seconds elapsed" % \
-                            (int(time.time()-stime)))
-            self.job.setStatus(Job.FINISHED)
+	  if self.job:
+	      self.job.setComment("Complete - %d seconds elapsed" % \
+			      (int(time.time()-stime)))
+	      self.job.setStatus(Job.FINISHED)
 
     def copy_seek(self):
         for seek in self.rec.seek:
