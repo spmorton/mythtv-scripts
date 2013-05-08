@@ -117,7 +117,7 @@ class VIDEO:
         self.vid.hostname = self.db.gethostname()
         if self.rec.inetref:
             # good data is available, use it
-            if self.rec.season is not None:
+            if self.rec.season is not 0:
                 self.log(self.log.GENERAL, self.log.INFO,
                         'Performing TV export with local data.')
                 self.type = 'TV'
@@ -233,8 +233,11 @@ class VIDEO:
                     '%s - %s' % (self.rec.title, self.rec.subtitle))
         if bend.fileExists(self.vid.filename, 'Videos'):
           self.log(MythLog.GENERAL, MythLog.INFO, 'Recording already exists in Myth Videos')
-          self.job.setComment("Action would result in duplicate file, job ended" )
+          self.job.setComment("Action would result in duplicate entry, job ended" )
           self.job.setStatus(Job.FINISHED)
+          self.vid.delete()
+          self.log(MythLog.GENERAL, MythLog.INFO, 'Exiting program')
+          sys.exit(0)
     
         else:
           srcfp = self.rec.open('r')
