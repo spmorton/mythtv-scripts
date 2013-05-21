@@ -231,7 +231,8 @@ class VIDEO:
         
         bend = MythBE(db=self.vid._db)
         self.log(MythLog.GENERAL, MythLog.INFO, 'Checking for duplication of ',
-                    '%s - %s' % (self.rec.title, self.rec.subtitle))
+                    '%s - %s' % (self.rec.title.encode('utf-8'), 
+                                 self.rec.subtitle.encode('utf-8')))
         if bend.fileExists(self.vid.filename, 'Videos'):
           self.log(MythLog.GENERAL, MythLog.INFO, 'Recording already exists in Myth Videos')
           self.job.setComment("Action would result in duplicate entry, job ended" )
